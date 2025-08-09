@@ -1,0 +1,8 @@
+# Files
+.DS_STORE
+
+# Folders
+export/html5/
+export/windows/
+export/neko/
+export/
