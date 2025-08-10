@@ -1,2 +1,5 @@
-# FlxMeme
-A HaxeFlixel project where you can make memes!
+<img width="452" height="87" alt="flx-meme-logo" src="https://github.com/user-attachments/assets/32db2159-8e5e-413b-bef9-943111a1308a" />
+
+---------------------------------------------------
+### A HaxeFlixel project where you can make memes!
+Version: v1.0.0
