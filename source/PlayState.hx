@@ -18,13 +18,14 @@ import flash.display.BitmapData;
 
 class PlayState extends FlxState
 {
-	var version:String = "v1.0.0";
+	var version:String = "v1.0.1";
 
 	var flixelMemeLogo:FlxSprite = new FlxSprite().loadGraphic("assets/images/flx-meme-logo.png");
 	var openImageButton:FlxButton;
 
 	var resetImagesButton:FlxButton;
 	var centerTextsXButton:FlxButton;
+	var centerTextsYButton:FlxButton;
 	var resetTextsButton:FlxButton;
 	var resetTextPositionsButton:FlxButton;
 
@@ -49,6 +50,8 @@ class PlayState extends FlxState
 	{
 		super.create();
 
+		FlxG.camera.fade(FlxColor.BLACK, 1, true, null, true);
+
 		versionText.size = 24;
 		versionText.text = version;
 		versionText.x = FlxG.width - versionText.width;
@@ -66,8 +69,8 @@ class PlayState extends FlxState
 		bottomText.y = FlxG.height - (FlxG.height / 10);
 
 		controlsNoticeText.size = 16;
-		controlsNoticeText.text = "F1 - Hide Watermark \nF2 - Hide Mouse \nF3 - Hide UI";
-		controlsNoticeText.y = 690;
+		controlsNoticeText.text = "F1 - Toggle Watermark \nF2 - Toggle Mouse \nF3 - Toggle UI\nF4 - Toggle All";
+		controlsNoticeText.y = 630;
 		controlsNoticeText.x = 5;
 
 		meme.visible = false;
@@ -85,8 +88,9 @@ class PlayState extends FlxState
 		openImageButton.scale.set(2.5, 2.5);
 		openImageButton.screenCenter();
 
-		resetImagesButton = new FlxButton(10, 740, "Reset Image", resetImage);
-		centerTextsXButton = new FlxButton(10, 770, "Center Texts X", centerTextsX);
+		resetImagesButton = new FlxButton(10, 710, "Reset Image", resetImage);
+		centerTextsXButton = new FlxButton(10, 740, "Center Texts X", centerTextsX);
+		centerTextsYButton = new FlxButton(10, 770, "Center Texts Y", centerTextsY);
 		resetTextPositionsButton = new FlxButton(10, 830, "Reset Text POS", resetTextPositions);
 		resetTextsButton = new FlxButton(10, 800, "Reset Text", resetTexts);
 
@@ -98,6 +102,7 @@ class PlayState extends FlxState
 		add(resetImagesButton);
 		resetImagesButton.visible = false;
 		add(centerTextsXButton);
+		add(centerTextsYButton);
 		add(resetTextsButton);
 		add(resetTextPositionsButton);
 	}
@@ -107,6 +112,13 @@ class PlayState extends FlxState
 		topText.screenCenter(X);
 		bottomText.screenCenter(X);
 		trace("Centered texts on X-Axis.");
+	}
+
+	public function centerTextsY()
+	{
+		topText.screenCenter(Y);
+		bottomText.screenCenter(Y);
+		trace("Centered texts on Y-Axis.");
 	}
 
 	public function resetImage()
@@ -174,14 +186,49 @@ class PlayState extends FlxState
     	var bmpData:BitmapData = bmp.bitmapData;
 
 		trace("Image loaded.");
-		openImageButton.x = FlxG.width - 200;
+		openImageButton.x = FlxG.width - 150;
 		openImageButton.y  = FlxG.height - 50;
 		meme.loadGraphic(bmpData);
 		meme.visible = true;
 		meme.screenCenter();
 		resetImagesButton.visible = true;
-		controlsNoticeText.y = 660;
+		controlsNoticeText.y = 600;
 		imageLoaded = true;
+	}
+
+	public function toggleWatermark()
+	{
+		watermarkEnabled = !watermarkEnabled;
+		trace("Watermark Enabled ? - " + watermarkEnabled);
+	}
+
+	public function toggleCursor()
+	{
+		FlxG.mouse.visible = !FlxG.mouse.visible;
+		trace("Cursor Visible ? - " + FlxG.mouse.visible);
+	}
+
+	public function toggleUi()
+	{
+		versionText.visible = !versionText.visible;
+		controlsNoticeText.visible = !controlsNoticeText.visible;
+		topTextInput.visible = !topTextInput.visible;
+		bottomTextInput.visible = !bottomTextInput.visible;
+		openImageButton.visible = !openImageButton.visible;
+		centerTextsXButton.visible = !centerTextsXButton.visible;
+		centerTextsYButton.visible = !centerTextsYButton.visible;
+		resetTextPositionsButton.visible = !resetTextPositionsButton.visible;
+		resetTextsButton.visible = !resetTextsButton.visible;
+
+		if (imageLoaded)
+		{
+			resetImagesButton.visible = !resetImagesButton.visible;
+		} else {
+			resetImagesButton.visible = false;
+		}
+
+		uiToggled = !uiToggled;
+		trace("UI toggled ? - " + uiToggled);
 	}
 
 	override public function update(elapsed:Float)
@@ -217,36 +264,24 @@ class PlayState extends FlxState
 
 		if (FlxG.keys.justPressed.F1)
 		{
-			watermarkEnabled = !watermarkEnabled;
-			trace("Watermark Enabled ? - " + watermarkEnabled);
+			toggleWatermark();
 		}
 
 		if (FlxG.keys.justPressed.F2)
 		{
-			FlxG.mouse.visible = !FlxG.mouse.visible;
-			trace("Cursor Visible ? - " + FlxG.mouse.visible);
+			toggleCursor();
 		}
 
 		if (FlxG.keys.justPressed.F3)
 		{
-			versionText.visible = !versionText.visible;
-			controlsNoticeText.visible = !controlsNoticeText.visible;
-			topTextInput.visible = !topTextInput.visible;
-			bottomTextInput.visible = !bottomTextInput.visible;
-			openImageButton.visible = !openImageButton.visible;
-			centerTextsXButton.visible = !centerTextsXButton.visible;
-			resetTextPositionsButton.visible = !resetTextPositionsButton.visible;
-			resetTextsButton.visible = !resetTextsButton.visible;
+			toggleUi();
+		}
 
-			if (imageLoaded)
-			{
-				resetImagesButton.visible = !resetImagesButton.visible;
-			} else {
-				resetImagesButton.visible = false;
-			}
-
-			uiToggled = !uiToggled;
-			trace("UI toggled ? - " + uiToggled);
+		if (FlxG.keys.justPressed.F4)
+		{
+			toggleWatermark();
+			toggleCursor();
+			toggleUi();
 		}
 
 		flixelMemeLogo.visible = watermarkEnabled;
