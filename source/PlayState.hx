@@ -18,12 +18,13 @@ import flash.display.BitmapData;
 
 class PlayState extends FlxState
 {
-	var version:String = "v1.0.1";
+	var version:String = "v1.0.2";
 
 	var flixelMemeLogo:FlxSprite = new FlxSprite().loadGraphic("assets/images/flx-meme-logo.png");
 	var openImageButton:FlxButton;
 
 	var resetImagesButton:FlxButton;
+	var resetImagesPositionButton:FlxButton;
 	var centerTextsXButton:FlxButton;
 	var centerTextsYButton:FlxButton;
 	var resetTextsButton:FlxButton;
@@ -46,6 +47,16 @@ class PlayState extends FlxState
 
 	var imageLoaded:Bool = false;
 
+	var angleTopText:Int = 0;
+	var angleBottomText:Int = 0;
+
+	var angleImage:Int = 0;
+
+	var initialTextY:Int = 510;
+
+	var draggableImage:Bool = false;
+	var draggableText:Bool = true;
+
 	override public function create()
 	{
 		super.create();
@@ -60,20 +71,25 @@ class PlayState extends FlxState
 		topText.size = 64;
 		topText.text = "TOP TEXT";
 		topText.font = "assets/fonts/impact.ttf";
+		topText.angle = angleTopText;
 		topText.screenCenter(X);
+		topText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 3);
 
 		bottomText.size = 64;
 		bottomText.text = "BOTTOM TEXT";
 		bottomText.font = "assets/fonts/impact.ttf";
+		bottomText.angle = angleBottomText;
 		bottomText.screenCenter(X);
 		bottomText.y = FlxG.height - (FlxG.height / 10);
+		bottomText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 3);
 
 		controlsNoticeText.size = 16;
-		controlsNoticeText.text = "F1 - Toggle Watermark \nF2 - Toggle Mouse \nF3 - Toggle UI\nF4 - Toggle All";
-		controlsNoticeText.y = 630;
+		controlsNoticeText.text = "F1 - Toggle Watermark \nF2 - Toggle Mouse \nF3 - Toggle UI\nF4 - Toggle All\nF5 - Toggle Draggable Image\nF6 - Toggle Draggable Texts\n\nQ/E+Click - Angle Text + Images \n1+Click - Reset Angle - Text + Images\n(If Draggable)";
+		controlsNoticeText.y = initialTextY;
 		controlsNoticeText.x = 5;
 
 		meme.visible = false;
+		meme.angle = angleImage;
 		add(meme);
 
 		add(topText);
@@ -85,10 +101,11 @@ class PlayState extends FlxState
 		add(controlsNoticeText);
 
 		openImageButton = new FlxButton(0, 0, "Load - Image", onLoadImage);
-		openImageButton.scale.set(2.5, 2.5);
+		openImageButton.setGraphicSize(200, 40);
 		openImageButton.screenCenter();
 
-		resetImagesButton = new FlxButton(10, 710, "Reset Image", resetImage);
+		resetImagesButton = new FlxButton(10, 680, "Reset Meme", resetImage);
+		resetImagesPositionButton = new FlxButton(10, 710, "Reset Meme POS", resetImagePosition);
 		centerTextsXButton = new FlxButton(10, 740, "Center Texts X", centerTextsX);
 		centerTextsYButton = new FlxButton(10, 770, "Center Texts Y", centerTextsY);
 		resetTextPositionsButton = new FlxButton(10, 830, "Reset Text POS", resetTextPositions);
@@ -100,7 +117,9 @@ class PlayState extends FlxState
 		add(openImageButton);
 
 		add(resetImagesButton);
+		add(resetImagesPositionButton);
 		resetImagesButton.visible = false;
+		resetImagesPositionButton.visible = false;
 		add(centerTextsXButton);
 		add(centerTextsYButton);
 		add(resetTextsButton);
@@ -121,10 +140,15 @@ class PlayState extends FlxState
 		trace("Centered texts on Y-Axis.");
 	}
 
+	public function resetImagePosition()
+	{
+		meme.screenCenter();
+		trace("Reset image.");
+	}
+
 	public function resetImage()
 	{
 		meme.loadGraphic("assets/images/tempMeme.png");
-		meme.screenCenter();
 		trace("Reset image.");
 	}
 
@@ -192,7 +216,8 @@ class PlayState extends FlxState
 		meme.visible = true;
 		meme.screenCenter();
 		resetImagesButton.visible = true;
-		controlsNoticeText.y = 600;
+		resetImagesPositionButton.visible = true;
+		controlsNoticeText.y = initialTextY - 50;
 		imageLoaded = true;
 	}
 
@@ -223,8 +248,10 @@ class PlayState extends FlxState
 		if (imageLoaded)
 		{
 			resetImagesButton.visible = !resetImagesButton.visible;
+			resetImagesPositionButton.visible = !resetImagesPositionButton.visible;
 		} else {
 			resetImagesButton.visible = false;
+			resetImagesPositionButton.visible = false;
 		}
 
 		uiToggled = !uiToggled;
@@ -238,25 +265,78 @@ class PlayState extends FlxState
 		topText.text = topTextInput.text;
 		bottomText.text = bottomTextInput.text;
 
-		if (FlxG.mouse.overlaps(topText))
+		topText.angle = angleTopText;
+		bottomText.angle = angleBottomText;
+
+		meme.angle = angleImage;
+
+		if (FlxG.mouse.overlaps(meme) && draggableImage)
+		{
+			meme.alpha = 0.5;
+			if (FlxG.mouse.pressed)
+			{
+				meme.x = FlxG.mouse.getPosition().x - meme.width / 2;
+				meme.y = FlxG.mouse.getPosition().y - meme.height / 2;
+
+				if (FlxG.keys.justPressed.E)
+				{
+					angleImage += 10;
+					FlxG.sound.play("assets/sounds/rotateRight.ogg");
+				} else if (FlxG.keys.justPressed.Q) {
+					angleImage -= 10;
+					FlxG.sound.play("assets/sounds/rotateLeft.ogg");
+				} else if (FlxG.keys.justPressed.ONE) {
+					angleImage = 0;
+					FlxG.sound.play("assets/sounds/rotateReset.ogg");
+				}
+			}
+		} else {
+			meme.alpha = 1;
+		}
+
+		if (FlxG.mouse.overlaps(topText) && draggableText)
 		{
 			topText.color = FlxColor.GRAY;
 			if (FlxG.mouse.pressed)
 			{
 				topText.x = FlxG.mouse.getPosition().x - topText.width / 2;
 				topText.y = FlxG.mouse.getPosition().y - topText.height / 2;
+
+				if (FlxG.keys.justPressed.E)
+				{
+					angleTopText += 10;
+					FlxG.sound.play("assets/sounds/rotateRight.ogg");
+				} else if (FlxG.keys.justPressed.Q) {
+					angleTopText -= 10;
+					FlxG.sound.play("assets/sounds/rotateLeft.ogg");
+				} else if (FlxG.keys.justPressed.ONE) {
+					angleTopText = 0;
+					FlxG.sound.play("assets/sounds/rotateReset.ogg");
+				}
 			}
 		} else {
 			topText.color = FlxColor.WHITE;
 		}
 
-		if (FlxG.mouse.overlaps(bottomText))
+		if (FlxG.mouse.overlaps(bottomText) && draggableText)
 		{
 			bottomText.color = FlxColor.GRAY;
 			if (FlxG.mouse.pressed)
 			{
 				bottomText.x = FlxG.mouse.getPosition().x - bottomText.width / 2;
 				bottomText.y = FlxG.mouse.getPosition().y - bottomText.height / 2;
+
+				if (FlxG.keys.justPressed.E)
+				{
+					angleBottomText += 10;
+					FlxG.sound.play("assets/sounds/rotateRight.ogg");
+				} else if (FlxG.keys.justPressed.Q) {
+					angleBottomText -= 10;
+					FlxG.sound.play("assets/sounds/rotateLeft.ogg");
+				} else if (FlxG.keys.justPressed.ONE) {
+					angleBottomText = 0;
+					FlxG.sound.play("assets/sounds/rotateReset.ogg");
+				}
 			}
 		} else {
 			bottomText.color = FlxColor.WHITE;
@@ -282,6 +362,26 @@ class PlayState extends FlxState
 			toggleWatermark();
 			toggleCursor();
 			toggleUi();
+		}
+
+		if (FlxG.keys.justPressed.F5)
+		{
+			draggableImage = !draggableImage;
+		}
+
+		if (FlxG.keys.justPressed.F6)
+		{
+			draggableText = !draggableText;
+		}
+
+		if (FlxG.mouse.justPressed)
+		{
+			FlxG.sound.play("assets/sounds/clickPress.ogg");
+		}
+
+		if (FlxG.mouse.justReleased)
+		{
+			FlxG.sound.play("assets/sounds/clickRelease.ogg");
 		}
 
 		flixelMemeLogo.visible = watermarkEnabled;

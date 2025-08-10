@@ -2,6 +2,14 @@
 
 ---
 # Changelog:
+v1.0.2 - 8/9/25 - Polishing Update
+- Texts can now be centered on the Y-Axis.
+- Click sounds now play when you click/release your mouse.
+- You can now rotate texts, using Q/E while clicking and holding on a text object, along with a nice sound to go along with it.
+- Images can now be dragged.
+- Images can now be rotated, the same way you rotate texts.
+- Images + Text angles can now be reset by holding on the desired object and pressing 1.
+- You can toggle what can be draggable in game, using either F5/F6 to toggle Images/Texts
 v1.0.1 - 8/9/25 - Tiny Enhancements And Fixes
 - Texts can now be centered on the Y-Axis.
 - F4 toggles all sorts of UI elements on the screen.
